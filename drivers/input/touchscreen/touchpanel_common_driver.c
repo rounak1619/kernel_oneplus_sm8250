@@ -13,6 +13,7 @@
 #include <linux/oem/project_info.h>
 #include <linux/time.h>
 #include <linux/pm_wakeup.h>
+#include <linux/hor_perf_helper.h>
 #include <linux/oem/boot_mode.h>
 
 
@@ -1365,9 +1366,6 @@ static ssize_t proc_game_switch_write(struct file *file, const char __user *buff
 	char buf[4] = {0};
 	struct touchpanel_data *ts = PDE_DATA(file_inode(file));
 
-	if (ts->force_game_switch)
-		return count;
-
 	if (count > 4) {
 		TPD_INFO("%s:count > 4\n",__func__);
 		return count;
@@ -1387,6 +1385,12 @@ static ssize_t proc_game_switch_write(struct file *file, const char __user *buff
 		return count;
 	}
 	sscanf(buf, "%x", &value);
+
+	set_frequency_limit(!value);
+
+	if (ts->force_game_switch)
+		return count;
+
 	ts->noise_level = value;
 	ts->game_mode_status = value > 0 ? 1 : 0;
 
